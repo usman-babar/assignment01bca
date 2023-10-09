@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+// Create a new blockchain
 type Block struct {
 	Transaction  string
 	Nonce        int
@@ -13,10 +14,7 @@ type Block struct {
 	Hash         string
 }
 
-type Blockchain struct {
-	Blocks []*Block
-}
-
+// Adding 5 dummy blocks
 func NewBlock(transaction string, nonce int, previousHash string) *Block {
 	block := &Block{
 		Transaction:  transaction,
@@ -27,17 +25,31 @@ func NewBlock(transaction string, nonce int, previousHash string) *Block {
 	return block
 }
 
+// Create a new blockchain
+type Blockchain struct {
+	Blocks []*Block
+}
+
+// Calculate hash
+func CalculateHash(stringToHash string) string {
+	hashInBytes := sha256.Sum256([]byte(stringToHash))
+	return hex.EncodeToString(hashInBytes[:])
+}
+
+// Verify the blockchain
+func ChangeBlock(block *Block, newTransaction string) {
+	block.Transaction = newTransaction
+	block.Hash = CalculateHash(fmt.Sprintf("%s%d%s", block.Transaction, block.Nonce, block.PreviousHash))
+}
+
+// Display all blocks
 func DisplayBlocks(bc *Blockchain) {
 	for _, block := range bc.Blocks {
 		fmt.Printf("Transaction: %s, Nonce: %d, Previous Hash: %s, Current Hash: %s\n", block.Transaction, block.Nonce, block.PreviousHash, block.Hash)
 	}
 }
 
-func ChangeBlock(block *Block, newTransaction string) {
-	block.Transaction = newTransaction
-	block.Hash = CalculateHash(fmt.Sprintf("%s%d%s", block.Transaction, block.Nonce, block.PreviousHash))
-}
-
+// Verify the blockchain
 func VerifyChain(bc *Blockchain) bool {
 	for i := 1; i < len(bc.Blocks); i++ {
 		currentBlock := bc.Blocks[i]
@@ -54,12 +66,9 @@ func VerifyChain(bc *Blockchain) bool {
 	return true
 }
 
-func CalculateHash(stringToHash string) string {
-	hashInBytes := sha256.Sum256([]byte(stringToHash))
-	return hex.EncodeToString(hashInBytes[:])
-}
-
+// main
 func main() {
+	
 	// Create a new blockchain
 	blockchain := &Blockchain{
 		Blocks: []*Block{
@@ -72,38 +81,39 @@ func main() {
 		},
 	}
 
-	// Adding 5 dummy blocks
-	for i := 0; i < 5; i++ {
-		transaction := fmt.Sprintf("user%d to user%d", i, i+1)
+	// Adding dummy blocks
+	for i := 0; i < 6; i++ {
+		transaction := fmt.Sprintf("person%d to person%d", i, i+1)
 		nonce := i
 		previousHash := blockchain.Blocks[len(blockchain.Blocks)-1].Hash
 		newBlock := NewBlock(transaction, nonce, previousHash)
 		blockchain.Blocks = append(blockchain.Blocks, newBlock)
 	}
 
-	// Display all blocks
+	// Displaying blocks
 	DisplayBlocks(blockchain)
 
-	// Verify the blockchain
+	// Verifying the blockchain
 	isValid1 := VerifyChain(blockchain)
 	if isValid1 {
-		fmt.Println("Blockchain is valid.")
+		fmt.Println("\nBlockchain is valid.\n")
 	} else {
-		fmt.Println("Blockchain is not valid.")
+		fmt.Println("\nBlockchain is invalid\n.")
 	}
 
 	fmt.Printf("\n\n\n")
 
 	// Change the transaction of the third block
-	ChangeBlock(blockchain.Blocks[3], "user3 to user5")
+	ChangeBlock(blockchain.Blocks[4], "person4 to person4")
 
-	// Display all blocks
+	// Displaying all blocks
 	DisplayBlocks(blockchain)
-	// Verify the blockchain
+
+	// Verifying the blockchain
 	isValid2 := VerifyChain(blockchain)
 	if isValid2 {
-		fmt.Println("Blockchain is valid.")
+		fmt.Println("\nBlockchain is valid.\n")
 	} else {
-		fmt.Println("Blockchain is not valid.")
+		fmt.Println("\nBlockchain is invalid.\n")
 	}
 }
